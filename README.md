@@ -10,7 +10,10 @@ A simple front-end web app that allows you to search for artists on Spotify, vie
 
 ## Tech Used
 
-- HTML, CSS, JavaScript
+- A public GitHub repository containing my project
+- HTML document for the page
+- CSS document to style the HTML page
+- JavaScript file that retrieves data from one of several public API sources to display the data on the HTML page
 - Vite for build and .env support
 - Spotify Web API (OAuth 2.0 for client credentials)
 - Local Storage for saving data (artist name, ID)
