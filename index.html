@@ -1,13 +1,132 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Spotify Music Explorer</title>
+</head>
+<body>
+  <h1>Spotify Music Explorer</h1>
+  <input type="text" id="artistInput" placeholder="Search artist..." />
+  <button onclick="searchArtist()">Search</button>
+  <div id="artistResults"></div>
+
+  <script type="module" src="main.js"></script>
+</body>
 </html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures responsiveness -->
+  <link rel="stylesheet" href="style.css" />
+  <title>Artist Info</title>
+</head>
+<body>
+  <h1>Artist Info</h1>
+  <div id="artistDetails"></div>
+  <a href="tracks.html">View Top Tracks</a>
+
+  <script type="module">
+    import { getAccessToken } from './auth.js';
+
+    async function displayArtist() {
+      const token = await getAccessToken();
+      const artistId = localStorage.getItem('artistId');
+
+      // Error handling if artistId is missing
+      if (!artistId) {
+        document.getElementById('artistDetails').innerHTML = '<p>No artist selected.</p>';
+        return;
+      }
+
+      const res = await fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Error handling if fetch fails
+      if (!res.ok) {
+        document.getElementById('artistDetails').innerHTML = '<p>Error fetching artist data.</p>';
+        return;
+      }
+
+      const artist = await res.json();
+
+      // Display artist details
+      document.getElementById('artistDetails').innerHTML = `
+        <h2>${artist.name}</h2>
+        <p>Genres: ${artist.genres.join(', ')}</p>
+        <p>Followers: ${artist.followers.total}</p>
+        <img src="${artist.images[0]?.url}" width="200" alt="Artist Image" />
+      `;
+    }
+
+    // Call the function to display the artist details
+    displayArtist();
+  </script>
+</body>
+</html>   
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Top Tracks</title>
+</head>
+<body>
+  <h1>Top Tracks</h1>
+  <div id="tracksList"></div>
+  <a href="artist.html">Back to Artist</a>
+
+  <script type="module">
+    import { getAccessToken } from './auth.js';
+
+    async function displayTracks() {
+      const artistId = localStorage.getItem('artistId');
+      const list = document.getElementById('tracksList');
+
+      if (!artistId) {
+        list.innerHTML = '<p>No artist selected.</p>';
+        return;
+      }
+
+      const token = await getAccessToken();
+
+      const res = await fetch(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        list.innerHTML = '<p>Error fetching top tracks.</p>';
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.tracks.length === 0) {
+        list.innerHTML = '<p>No tracks found.</p>';
+        return;
+      }
+
+      data.tracks.forEach(track => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <p><strong>${track.name}</strong></p>
+          ${track.preview_url ? `<audio controls src="${track.preview_url}"></audio>` : '<p>No preview available.</p>'}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    displayTracks();
+  </script>
+</body>
+</html>
+
+
+
